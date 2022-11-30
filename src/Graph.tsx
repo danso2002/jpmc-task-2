@@ -34,20 +34,13 @@ class Graph extends Component<IProps, {}> {
     // Get element to attach the table from the DOM.
     const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement
 
-    elem.setAttribute('view', 'y_line')
-    elem.setAttribute('column-pivots', '["stock"]')
-    elem.setAttribute('row-pivots', '["timestamp"]')
-    elem.setAttribute('columns', '["top_ask_price"]')
-    elem.setAttribute('aggregates', `{
-      "stock":"distinct count",             
-      "top_ask_price":"avg",
-      "top_bid_price":"avg",
-      "timestamp":"distinct count"}`)
-
     const schema = {
-      stock: 'string',
-      top_ask_price: 'float',
-      top_bid_price: 'float',
+      price_abc : 'float',
+      price_def : 'float',
+      ratio : 'float',
+      upper_bound : 'float',
+      lower_bound : 'float',
+      trigger_alert : 'float',
       timestamp: 'date',
     };
 
@@ -58,7 +51,16 @@ class Graph extends Component<IProps, {}> {
       // Load the `table` in the `<perspective-viewer>` DOM reference.
 
       // Add more Perspective configurations here.
+    
       elem.load(this.table);
+      elem.setAttribute('view', 'y_line')
+      elem.setAttribute('column-pivots', '["stock"]')
+      elem.setAttribute('row-pivots', '["timestamp"]')
+      elem.setAttribute('columns', '["top_ask_price"]')
+      elem.setAttribute('aggregates', JSON.stringify({
+        stock:"distinct_count",      top_ask_price:"avg",
+        top_bid_price:"avg",
+        timestamp:"distinct count"})
     }
   }
 
@@ -67,7 +69,10 @@ class Graph extends Component<IProps, {}> {
     if (this.table) {
       // As part of the task, you need to fix the way we update the data props to
       // avoid inserting duplicated entries into Perspective table again.
-      this.table.update(this.props.data.map((el: any) => {
+      this.table.update([
+        DataManiplator.generateRow(this.props.data)
+      ] as unknown as TableData)
+
         // Format the data from ServerRespond to the schema
         return {
           stock: el.stock,
